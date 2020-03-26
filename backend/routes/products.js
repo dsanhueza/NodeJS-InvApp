@@ -47,7 +47,7 @@ router.post('/GetProduct', async (req,res) =>{
     }
 });
 
-//Insertar o Modificar un Producto en la bd
+//Insertar un Producto en la bd
 router.post('/InsertProduct', async (req,res) => {
     const { rutUsuario, idProducto, nombreProducto, descripcionProducto, fechaPublicacion, precioProducto } = req.body;
 
@@ -115,6 +115,27 @@ router.post('/InsertProduct', async (req,res) => {
     else{
         res.json({"status": "error", "message": "Error, no se agrego rutUsuario"});
     } 
+});
+
+//Modificar Producto en la bd
+router.post('/UpdateProduct', async (req, res) =>{
+    const { rutUsuario, idProducto, nombreProducto, descripcionProducto, fechaPublicacion, precioProducto } = req.body;
+    const productExistInDb = await Product.exists({"rutUsuario":req.body.rutUsuario, "idProducto":req.body.idProducto});
+
+    if(productExistInDb ==  true){
+        const updateTask = {
+            nombreProducto : req.body.nombreProducto,
+            descripcionProducto : req.body.descripcionProducto,
+            precioProducto : req.body.precioProducto,
+            fechaPublicacion : req.body.fechaPublicacion
+        };
+        await Product.findOneAndUpdate({"rutUsuario": req.body.rutUsuario, "idProducto": req.body.idProducto}, { $set: updateTask });
+        res.json({"status":"success", "message": "Producto Modificado con Éxito"}); 
+
+    }
+    else{
+        res.json({"status": "error", "message": "Error, el producto no existe en la Base de Datos"});
+    }
 });
 
 //Elimina un producto de la bd
