@@ -48,29 +48,42 @@ router.post('/GetProduct', async (req,res) =>{
 });
 
 //Insertar o Modificar un Producto en la bd
-router.post('/InsertOrUpdateProduct', async (req,res) => {
+router.post('/InsertProduct', async (req,res) => {
     const { rutUsuario, idProducto, nombreProducto, descripcionProducto, fechaPublicacion, precioProducto } = req.body;
 
     if(rutUsuario){
         if(nombreProducto){
             if(descripcionProducto){
                 if(precioProducto){
-                        const userExistsInProductDB = await Product.exists({"rutUsuario" : req.body.rutUsuario});
+                    if(idProducto){
+                        const userExistsInProductDB = await Product.exists({"rutUsuario":req.body.rutUsuario});
                         if(userExistsInProductDB == true){
-                            const productExist = await Product.exists({"rutUsuario": req.body.rutUsuario, "nombreProducto": req.body.nombreProducto});
-                            if(productExist == true){
-                                const updateTask = {
-                                    nombreProducto : req.body.nombreProducto,
-                                    descripcionProducto : req.body.descripcionProducto,
-                                    precioProducto : req.body.precioProducto,
-                                    fechaPublicacion : req.body.fechaPublicacion
-                                };
-                                await Product.findOneAndUpdate({"rutUsuario": req.body.rutUsuario, "nombreProducto": req.body.nombreProducto}, { $set: updateTask });
-                                res.json({"status":"success", "message": "Producto Modificado con Éxito"}); 
+                            const productExist = await Product.exists({"idProducto":req.body.idProducto, "rutUsuario":req.body.rutUsuario, "nombreProducto":req.body.nombreProducto});
+                            if(productExist ==  true){
+                                res.json({"status": "error", "message": "Error, el producto ya existe en la base de datos"});
+                            }
+                            else{
+                                const newProduct = new Product({ rutUsuario, idProducto, nombreProducto, descripcionProducto, fechaPublicacion, precioProducto });
+                                await newProduct.save();
+                                res.json({"status":"success", "message": "Producto Registrado con Éxito"}); 
+                            }
+                        }
+                        else{
+                            const newProduct = new Product({ rutUsuario, idProducto, nombreProducto, descripcionProducto, fechaPublicacion, precioProducto });
+                            await newProduct.save();
+                            res.json({"status":"success", "message": "Producto Registrado con Éxito"}); 
+                        }
+                    }
+                    else{
+                        const userExistsInProductDB = await Product.exists({"rutUsuario":req.body.rutUsuario});
+                        if(userExistsInProductDB == true){
+                            const productExist = await Product.exists({"rutUsuario":req.body.rutUsuario, "nombreProducto":req.body.nombreProducto, "descripcionProducto":req.body.descripcionProducto});
+                            if(productExist ==  true){
+                                res.json({"status": "error", "message": "Error, el producto ya existe en la base de datos"});
                             }
                             else{
                                 const idProducto = await Product.countDocuments({ "rutUsuario": req.body.rutUsuario }, function (err, count) {
-                                     count + 1;
+                                    count + 1;
                                 });
                                 const newProduct = new Product({ rutUsuario, idProducto, nombreProducto, descripcionProducto, fechaPublicacion, precioProducto });
                                 await newProduct.save();
@@ -83,8 +96,9 @@ router.post('/InsertOrUpdateProduct', async (req,res) => {
                             });
                             const newProduct = new Product({ rutUsuario, idProducto, nombreProducto, descripcionProducto, fechaPublicacion, precioProducto });
                             await newProduct.save();
-                            res.json({"status":"success", "message": "Producto Registrado con Éxito"}); 
+                            res.json({"status":"success", "message": "Producto Registrado con Éxito"});
                         }
+                    }
                 }
                 else{
                     res.json({"status": "error", "message": "Error, no se agrego precioProducto"});
