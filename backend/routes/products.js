@@ -49,7 +49,7 @@ router.post('/GetProduct', async (req,res) =>{
 
 //Insertar o Modificar un Producto en la bd
 router.post('/InsertOrUpdateProduct', async (req,res) => {
-    const { rutUsuario, nombreProducto, descripcionProducto, fechaPublicacion, precioProducto } = req.body;
+    const { rutUsuario, idProducto, nombreProducto, descripcionProducto, fechaPublicacion, precioProducto } = req.body;
 
     if(rutUsuario){
         if(nombreProducto){
@@ -57,7 +57,7 @@ router.post('/InsertOrUpdateProduct', async (req,res) => {
                 if(precioProducto){
                         const userExistsInProductDB = await Product.exists({"rutUsuario" : req.body.rutUsuario});
                         if(userExistsInProductDB == true){
-                            const productExist = await Product.exists({"idProducto" : req.body.idProducto,"rutUsuario": req.body.rutUsuario});
+                            const productExist = await Product.exists({"rutUsuario": req.body.rutUsuario, "nombreProducto": req.body.nombreProducto});
                             if(productExist == true){
                                 const updateTask = {
                                     nombreProducto : req.body.nombreProducto,
@@ -65,7 +65,7 @@ router.post('/InsertOrUpdateProduct', async (req,res) => {
                                     precioProducto : req.body.precioProducto,
                                     fechaPublicacion : req.body.fechaPublicacion
                                 };
-                                await Product.findOneAndUpdate({"idProducto": req.body.idProducto}, { $set: updateTask });
+                                await Product.findOneAndUpdate({"rutUsuario": req.body.rutUsuario, "nombreProducto": req.body.nombreProducto}, { $set: updateTask });
                                 res.json({"status":"success", "message": "Producto Modificado con Éxito"}); 
                             }
                             else{
