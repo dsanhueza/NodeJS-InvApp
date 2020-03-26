@@ -49,16 +49,15 @@ router.post('/GetProduct', async (req,res) =>{
 
 //Insertar o Modificar un Producto en la bd
 router.post('/InsertOrUpdateProduct', async (req,res) => {
-    const { rutUsuario, idProducto, nombreProducto, descripcionProducto, fechaPublicacion, precioProducto } = req.body;
+    const { rutUsuario, nombreProducto, descripcionProducto, fechaPublicacion, precioProducto } = req.body;
 
     if(rutUsuario){
         if(nombreProducto){
             if(descripcionProducto){
                 if(precioProducto){
-                    if(idProducto){
                         const userExistsInProductDB = await Product.exists({"rutUsuario" : req.body.rutUsuario});
                         if(userExistsInProductDB == true){
-                            const productExist = await Product.exists({"idProducto" : req.body.idProducto});
+                            const productExist = await Product.exists({"idProducto" : req.body.idProducto,"rutUsuario": req.body.rutUsuario});
                             if(productExist == true){
                                 const updateTask = {
                                     nombreProducto : req.body.nombreProducto,
@@ -70,20 +69,22 @@ router.post('/InsertOrUpdateProduct', async (req,res) => {
                                 res.json({"status":"success", "message": "Producto Modificado con Éxito"}); 
                             }
                             else{
+                                const idProducto = await Product.countDocuments({ "rutUsuario": req.body.rutUsuario }, function (err, count) {
+                                     count + 1;
+                                });
                                 const newProduct = new Product({ rutUsuario, idProducto, nombreProducto, descripcionProducto, fechaPublicacion, precioProducto });
                                 await newProduct.save();
                                 res.json({"status":"success", "message": "Producto Registrado con Éxito"}); 
                             }
                         }
                         else{
+                            const idProducto = await Product.countDocuments({ "rutUsuario": req.body.rutUsuario }, function (err, count) {
+                                count + 1;
+                            });
                             const newProduct = new Product({ rutUsuario, idProducto, nombreProducto, descripcionProducto, fechaPublicacion, precioProducto });
                             await newProduct.save();
                             res.json({"status":"success", "message": "Producto Registrado con Éxito"}); 
                         }
-                    }
-                    else{
-                        res.json({"status": "error", "message": "Error, no se agrego idProducto"});
-                    }
                 }
                 else{
                     res.json({"status": "error", "message": "Error, no se agrego precioProducto"});
